@@ -1,0 +1,77 @@
+'use client';
+
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { formatCurrency } from '@/data/financialData';
+
+interface ExpensesByCategoryChartProps {
+  data: { category: string; amount: number; percentage: number }[];
+}
+
+const COLORS = ['#ef4444', '#f97316', '#eab308', '#f59e0b', '#84cc16', '#22c55e'];
+
+export default function ExpensesByCategoryChart({
+  data,
+}: ExpensesByCategoryChartProps) {
+  const chartData = data.map((item) => ({
+    name: item.category,
+    value: item.percentage,
+    amount: item.amount,
+  }));
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border border-gray-200 rounded shadow-lg">
+          <p className="font-semibold">{payload[0].name}</p>
+          <p className="text-red-600">
+            {formatCurrency(payload[0].payload.amount)}
+          </p>
+          <p className="text-gray-600">{payload[0].value}%</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        Expenses by Category
+      </h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+            outerRadius={100}
+            fill="#8884d8"
+            dataKey="value"
+          >
+            {chartData.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip content={<CustomTooltip />} />
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="mt-4 flex flex-wrap justify-center gap-4">
+        {chartData.map((entry, index) => (
+          <div key={entry.name} className="flex items-center gap-2">
+            <div
+              className="w-4 h-4 rounded"
+              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+            />
+            <span className="text-sm text-gray-700">{entry.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
